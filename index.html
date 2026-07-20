@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>动物大冒险 · 陆地 & 海洋英语</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #FFF8E9;
+    --sun: #FFC93C;
+    --sky: #47B7E8;
+    --grass: #46D28A;
+    --ocean: #2E8FCC;
+    --coral: #FF6F5E;
+    --ink: #2E2A4D;
+    --card: #FFFFFF;
+    --paw: #E7DFC8;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{ margin:0; padding:0; height:100%; background: var(--bg);
+    font-family:'Nunito', sans-serif; color: var(--ink);
+    overscroll-behavior: none; user-select:none; }
+  body{ display:flex; flex-direction:column; align-items:center; min-height:100vh;
+    background-image:
+      radial-gradient(circle at 8% 10%, rgba(255,201,60,0.22) 0 60px, transparent 61px),
+      radial-gradient(circle at 92% 18%, rgba(71,183,232,0.22) 0 50px, transparent 51px),
+      radial-gradient(circle at 88% 88%, rgba(70,210,138,0.2) 0 70px, transparent 71px),
+      radial-gradient(circle at 10% 90%, rgba(255,111,94,0.18) 0 50px, transparent 51px);
+  }
+  .app{ width:100%; max-width:480px; min-height:100vh; display:flex; flex-direction:column;
+    align-items:center; padding: 16px 16px 26px; }
+  header{ width:100%; text-align:center; margin-bottom:4px; }
+  h1{ font-family:'Fredoka', sans-serif; font-size:24px; font-weight:700; margin:4px 0 2px; }
+  .subtitle{ font-size:12.5px; font-weight:700; color:#8A8399; margin:0; }
+
+  /* category chips */
+  .cats{ display:flex; gap:8px; margin: 12px 0 4px; width:100%; max-width:400px; }
+  .cat-chip{
+    flex:1; border:none; padding:10px 6px; border-radius:14px;
+    font-family:'Fredoka', sans-serif; font-size:12.5px; font-weight:600;
+    background:#F1EADA; color:#8A8399; cursor:pointer; text-align:center;
+    transition: all .2s ease;
+  }
+  .cat-chip.active{ color:#fff; box-shadow:0 3px 0 rgba(0,0,0,0.12); }
+  .cat-chip[data-cat="all"].active{ background: var(--ink); }
+  .cat-chip[data-cat="land"].active{ background: var(--grass); }
+  .cat-chip[data-cat="ocean"].active{ background: var(--ocean); }
+  .cat-count{ display:block; font-size:10px; opacity:.8; font-weight:700; margin-top:1px;}
+
+  .tabs{ display:flex; gap:8px; margin: 12px 0 4px; background:#F1EADA; padding:5px; border-radius:999px; }
+  .tab{ border:none; background:transparent; padding:9px 18px; font-family:'Fredoka', sans-serif;
+    font-size:14px; font-weight:600; color:#8A8399; border-radius:999px; cursor:pointer; transition: all .25s ease; }
+  .tab.active{ background: var(--ink); color:#fff; box-shadow:0 3px 0 rgba(0,0,0,0.1); }
+
+  .screen{ width:100%; display:none; flex-direction:column; align-items:center; flex:1; }
+  .screen.active{ display:flex; }
+
+  /* LEARN */
+  .stage{ width:100%; margin-top:10px; display:flex; flex-direction:column; align-items:center; }
+  .ticket{ position:relative; width:100%; max-width:340px; background:var(--card); border-radius:26px;
+    padding: 26px 20px 20px; text-align:center;
+    box-shadow: 0 14px 0 rgba(46,42,77,0.08), 0 4px 18px rgba(46,42,77,0.10);
+    border:3px dashed #EADFC4; animation: pop .35s ease; }
+  @keyframes pop{ 0%{transform:scale(.85) translateY(10px); opacity:0;} 100%{transform:scale(1) translateY(0); opacity:1;} }
+  .ticket-eyebrow{ font-family:'Fredoka', sans-serif; font-size:11px; font-weight:600; letter-spacing:2px;
+    text-transform:uppercase; color: var(--coral); margin-bottom:4px; display:flex; align-items:center; justify-content:center; gap:6px;}
+  .badge{ font-size:10px; padding:2px 8px; border-radius:999px; font-weight:700; letter-spacing:0.5px; }
+  .badge.land{ background:#E4FBEF; color:#1E9A5D; }
+  .badge.ocean{ background:#E4F3FC; color:#1E77AA; }
+  .emoji-big{ font-size:90px; line-height:1; margin:8px 0 12px; filter: drop-shadow(0 8px 10px rgba(0,0,0,0.12)); cursor:pointer; transition: transform .15s ease;}
+  .emoji-big:active{ transform: scale(0.92); }
+  .word-en{ font-family:'Fredoka', sans-serif; font-size:30px; font-weight:700; margin:0 0 2px; }
+  .word-cn{ font-size:14px; font-weight:700; color:#A79FB8; margin:0 0 16px; }
+  .speak-btn{ display:inline-flex; align-items:center; gap:8px; background: var(--sky); color:#fff; border:none;
+    font-family:'Fredoka', sans-serif; font-weight:600; font-size:15px; padding:12px 22px; border-radius:999px;
+    cursor:pointer; box-shadow: 0 4px 0 #2f93c2; }
+  .speak-btn:active{ transform: translateY(3px); box-shadow:none; }
+
+  .nav-row{ display:flex; align-items:center; justify-content:space-between; width:100%; max-width:340px; margin-top:18px; }
+  .nav-btn{ width:54px; height:54px; border-radius:50%; border:none; background:var(--card); font-size:20px;
+    color:var(--ink); box-shadow: 0 4px 0 #ded4b8; cursor:pointer; }
+  .nav-btn:active{ transform: translateY(3px); box-shadow:none; }
+  .nav-btn.primary{ background: var(--sun); box-shadow:0 4px 0 #d9a827; }
+  .counter{ font-family:'Fredoka', sans-serif; font-weight:600; font-size:13px; color:#8A8399; }
+
+  .trail{ display:flex; gap:5px; flex-wrap:wrap; justify-content:center; margin-top:16px; max-width:340px; }
+  .paw{ width:8px; height:8px; border-radius:50%; background: var(--paw); }
+  .paw.done{ background: var(--grass); }
+  .paw.current{ background: var(--coral); transform: scale(1.3); }
+
+  /* QUIZ */
+  .quiz-head{ width:100%; max-width:340px; display:flex; justify-content:space-between; align-items:center;
+    margin: 10px 0 16px; font-family:'Fredoka', sans-serif; font-weight:600; font-size:14px; color:#8A8399; }
+  .score-pill{ background: var(--grass); color:#fff; padding:6px 14px; border-radius:999px; font-weight:700; }
+  .question-card{ width:100%; max-width:340px; background:var(--card); border-radius:24px; padding:24px 20px;
+    text-align:center; box-shadow: 0 10px 0 rgba(46,42,77,0.07), 0 4px 16px rgba(46,42,77,0.08); }
+  .question-label{ font-size:13px; font-weight:700; color:#A79FB8; margin-bottom:8px; }
+  .replay-btn{ background: var(--coral); border:none; color:#fff; width:74px; height:74px; border-radius:50%;
+    font-size:28px; cursor:pointer; box-shadow: 0 5px 0 #d9503f; margin: 4px 0; }
+  .replay-btn:active{ transform: translateY(4px); box-shadow:none; }
+  .options{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; width:100%; max-width:340px; margin-top:16px; }
+  .opt{ background: var(--card); border:3px solid #EFE7D2; border-radius:18px; padding:14px 8px;
+    font-size:46px; cursor:pointer; box-shadow: 0 4px 0 #ded4b8; transition: all .15s ease; }
+  .opt:active{ transform: translateY(3px); box-shadow:none; }
+  .opt.correct{ background:#E4FBEF; border-color:var(--grass); }
+  .opt.wrong{ background:#FFEBE8; border-color:var(--coral); }
+  .feedback{ font-family:'Fredoka', sans-serif; font-weight:700; font-size:16px; height:24px; margin-top:12px; }
+  .feedback.ok{ color: var(--grass); }
+  .feedback.no{ color: var(--coral); }
+
+  .result-card{ width:100%; max-width:340px; background:var(--card); border-radius:24px; padding:32px 24px;
+    text-align:center; box-shadow: 0 10px 0 rgba(46,42,77,0.07); }
+  .result-card .big-emoji{ font-size:60px; }
+  .result-card h2{ font-family:'Fredoka', sans-serif; margin:10px 0 4px; }
+  .again-btn{ margin-top:16px; background: var(--ink); color:#fff; border:none; font-family:'Fredoka', sans-serif;
+    font-weight:600; font-size:15px; padding:13px 26px; border-radius:999px; cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>🦁🐬 动物大冒险</h1>
+    <p class="subtitle">50+ 陆地 & 海洋动物英语</p>
+  </header>
+
+  <div class="cats">
+    <button class="cat-chip active" data-cat="all">🌍 全部<span class="cat-count" id="cAll"></span></button>
+    <button class="cat-chip" data-cat="land">🏞️ 陆地<span class="cat-count" id="cLand"></span></button>
+    <button class="cat-chip" data-cat="ocean">🌊 海洋<span class="cat-count" id="cOcean"></span></button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tabLearn">学习卡片</button>
+    <button class="tab" id="tabQuiz">闯关小测</button>
+  </div>
+
+  <!-- LEARN -->
+  <div class="screen active" id="screenLearn">
+    <div class="stage">
+      <div class="ticket" id="ticket">
+        <div class="ticket-eyebrow">ZOO PASS <span class="badge land" id="catBadge">陆地</span></div>
+        <div class="emoji-big" id="learnEmoji">🐱</div>
+        <div class="word-en" id="learnWordEn">Cat</div>
+        <div class="word-cn" id="learnWordCn">猫</div>
+        <button class="speak-btn" id="learnSpeak">🔊 读一读</button>
+      </div>
+      <div class="nav-row">
+        <button class="nav-btn" id="prevBtn">◀</button>
+        <span class="counter" id="counter">1 / 58</span>
+        <button class="nav-btn primary" id="nextBtn">▶</button>
+      </div>
+      <div class="trail" id="trail"></div>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="screen" id="screenQuiz">
+    <div class="quiz-head">
+      <span id="quizProgress">第 1 / 10 题</span>
+      <span class="score-pill" id="scorePill">得分 0</span>
+    </div>
+    <div id="quizPlay">
+      <div class="question-card">
+        <div class="question-label">听一听，选出正确的动物</div>
+        <button class="replay-btn" id="replayBtn">🔊</button>
+        <div class="feedback" id="feedback"></div>
+      </div>
+      <div class="options" id="options"></div>
+    </div>
+    <div id="quizResult" style="display:none;">
+      <div class="result-card">
+        <div class="big-emoji">🏆</div>
+        <h2 id="resultTitle">太棒了！</h2>
+        <p id="resultDetail" style="color:#8A8399; font-weight:700;"></p>
+        <button class="again-btn" id="againBtn">再玩一次</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const animals = [
+  // ---- LAND (38) ----
+  {en:'Cat', cn:'猫', emoji:'🐱', cat:'land'},
+  {en:'Dog', cn:'狗', emoji:'🐶', cat:'land'},
+  {en:'Mouse', cn:'老鼠', emoji:'🐭', cat:'land'},
+  {en:'Hamster', cn:'仓鼠', emoji:'🐹', cat:'land'},
+  {en:'Rabbit', cn:'兔子', emoji:'🐰', cat:'land'},
+  {en:'Fox', cn:'狐狸', emoji:'🦊', cat:'land'},
+  {en:'Bear', cn:'熊', emoji:'🐻', cat:'land'},
+  {en:'Panda', cn:'熊猫', emoji:'🐼', cat:'land'},
+  {en:'Koala', cn:'考拉', emoji:'🐨', cat:'land'},
+  {en:'Tiger', cn:'老虎', emoji:'🐯', cat:'land'},
+  {en:'Lion', cn:'狮子', emoji:'🦁', cat:'land'},
+  {en:'Cow', cn:'奶牛', emoji:'🐮', cat:'land'},
+  {en:'Pig', cn:'猪', emoji:'🐷', cat:'land'},
+  {en:'Frog', cn:'青蛙', emoji:'🐸', cat:'land'},
+  {en:'Monkey', cn:'猴子', emoji:'🐵', cat:'land'},
+  {en:'Chick', cn:'小鸡', emoji:'🐤', cat:'land'},
+  {en:'Owl', cn:'猫头鹰', emoji:'🦉', cat:'land'},
+  {en:'Bat', cn:'蝙蝠', emoji:'🦇', cat:'land'},
+  {en:'Wolf', cn:'狼', emoji:'🐺', cat:'land'},
+  {en:'Horse', cn:'马', emoji:'🐴', cat:'land'},
+  {en:'Zebra', cn:'斑马', emoji:'🦓', cat:'land'},
+  {en:'Gorilla', cn:'大猩猩', emoji:'🦍', cat:'land'},
+  {en:'Elephant', cn:'大象', emoji:'🐘', cat:'land'},
+  {en:'Hippo', cn:'河马', emoji:'🦛', cat:'land'},
+  {en:'Rhino', cn:'犀牛', emoji:'🦏', cat:'land'},
+  {en:'Camel', cn:'骆驼', emoji:'🐪', cat:'land'},
+  {en:'Giraffe', cn:'长颈鹿', emoji:'🦒', cat:'land'},
+  {en:'Llama', cn:'羊驼', emoji:'🦙', cat:'land'},
+  {en:'Goat', cn:'山羊', emoji:'🐐', cat:'land'},
+  {en:'Sheep', cn:'绵羊', emoji:'🐑', cat:'land'},
+  {en:'Deer', cn:'鹿', emoji:'🦌', cat:'land'},
+  {en:'Kangaroo', cn:'袋鼠', emoji:'🦘', cat:'land'},
+  {en:'Squirrel', cn:'松鼠', emoji:'🐿️', cat:'land'},
+  {en:'Hedgehog', cn:'刺猬', emoji:'🦔', cat:'land'},
+  {en:'Raccoon', cn:'浣熊', emoji:'🦝', cat:'land'},
+  {en:'Snake', cn:'蛇', emoji:'🐍', cat:'land'},
+  {en:'Badger', cn:'獾', emoji:'🦡', cat:'land'},
+  {en:'Peacock', cn:'孔雀', emoji:'🦚', cat:'land'},
+  // ---- OCEAN (20) ----
+  {en:'Fish', cn:'小鱼', emoji:'🐟', cat:'ocean'},
+  {en:'Tropical Fish', cn:'热带鱼', emoji:'🐠', cat:'ocean'},
+  {en:'Pufferfish', cn:'河豚', emoji:'🐡', cat:'ocean'},
+  {en:'Dolphin', cn:'海豚', emoji:'🐬', cat:'ocean'},
+  {en:'Whale', cn:'鲸鱼', emoji:'🐳', cat:'ocean'},
+  {en:'Blue Whale', cn:'蓝鲸', emoji:'🐋', cat:'ocean'},
+  {en:'Shark', cn:'鲨鱼', emoji:'🦈', cat:'ocean'},
+  {en:'Octopus', cn:'章鱼', emoji:'🐙', cat:'ocean'},
+  {en:'Squid', cn:'鱿鱼', emoji:'🦑', cat:'ocean'},
+  {en:'Shrimp', cn:'虾', emoji:'🦐', cat:'ocean'},
+  {en:'Lobster', cn:'龙虾', emoji:'🦞', cat:'ocean'},
+  {en:'Crab', cn:'螃蟹', emoji:'🦀', cat:'ocean'},
+  {en:'Jellyfish', cn:'水母', emoji:'🪼', cat:'ocean'},
+  {en:'Seal', cn:'海豹', emoji:'🦭', cat:'ocean'},
+  {en:'Sea Turtle', cn:'海龟', emoji:'🐢', cat:'ocean'},
+  {en:'Otter', cn:'水獭', emoji:'🦦', cat:'ocean'},
+  {en:'Penguin', cn:'企鹅', emoji:'🐧', cat:'ocean'},
+  {en:'Duck', cn:'鸭子', emoji:'🦆', cat:'ocean'},
+  {en:'Swan', cn:'天鹅', emoji:'🦢', cat:'ocean'},
+  {en:'Crocodile', cn:'鳄鱼', emoji:'🐊', cat:'ocean'}
+];
+
+const landCount = animals.filter(a=>a.cat==='land').length;
+const oceanCount = animals.filter(a=>a.cat==='ocean').length;
+document.getElementById('cAll').textContent = animals.length + '种';
+document.getElementById('cLand').textContent = landCount + '种';
+document.getElementById('cOcean').textContent = oceanCount + '种';
+
+function speak(text){
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US'; u.rate = 0.8; u.pitch = 1.1;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+let category = 'all';
+function currentList(){
+  return category === 'all' ? animals : animals.filter(a => a.cat === category);
+}
+
+/* category chips */
+document.querySelectorAll('.cat-chip').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.cat-chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    category = btn.dataset.cat;
+    idx = 0;
+    renderCard(false);
+    if(screenQuiz.classList.contains('active')) startQuiz();
+  };
+});
+
+/* tabs */
+const tabLearn = document.getElementById('tabLearn');
+const tabQuiz = document.getElementById('tabQuiz');
+const screenLearn = document.getElementById('screenLearn');
+const screenQuiz = document.getElementById('screenQuiz');
+tabLearn.onclick = () => {
+  tabLearn.classList.add('active'); tabQuiz.classList.remove('active');
+  screenLearn.classList.add('active'); screenQuiz.classList.remove('active');
+};
+tabQuiz.onclick = () => {
+  tabQuiz.classList.add('active'); tabLearn.classList.remove('active');
+  screenQuiz.classList.add('active'); screenLearn.classList.remove('active');
+  startQuiz();
+};
+
+/* LEARN MODE */
+let idx = 0;
+const learnEmoji = document.getElementById('learnEmoji');
+const learnWordEn = document.getElementById('learnWordEn');
+const learnWordCn = document.getElementById('learnWordCn');
+const ticket = document.getElementById('ticket');
+const trail = document.getElementById('trail');
+const counter = document.getElementById('counter');
+const catBadge = document.getElementById('catBadge');
+
+function renderTrail(list){
+  trail.innerHTML = '';
+  const maxDots = 30;
+  const step = list.length > maxDots ? Math.ceil(list.length / maxDots) : 1;
+  list.forEach((_, i) => {
+    if(i % step !== 0 && i !== idx) return;
+    const p = document.createElement('div');
+    p.className = 'paw' + (i < idx ? ' done' : '') + (i === idx ? ' current' : '');
+    trail.appendChild(p);
+  });
+}
+
+function renderCard(autoSpeak){
+  const list = currentList();
+  if(idx >= list.length) idx = 0;
+  const a = list[idx];
+  learnEmoji.textContent = a.emoji;
+  learnWordEn.textContent = a.en;
+  learnWordCn.textContent = a.cn;
+  catBadge.textContent = a.cat === 'land' ? '陆地' : '海洋';
+  catBadge.className = 'badge ' + a.cat;
+  counter.textContent = (idx+1) + ' / ' + list.length;
+  ticket.style.animation = 'none'; void ticket.offsetWidth; ticket.style.animation = 'pop .35s ease';
+  renderTrail(list);
+  if(autoSpeak) speak(a.en);
+}
+
+document.getElementById('learnSpeak').onclick = () => speak(currentList()[idx].en);
+learnEmoji.onclick = () => speak(currentList()[idx].en);
+document.getElementById('nextBtn').onclick = () => {
+  const list = currentList();
+  idx = (idx + 1) % list.length;
+  renderCard(true);
+};
+document.getElementById('prevBtn').onclick = () => {
+  const list = currentList();
+  idx = (idx - 1 + list.length) % list.length;
+  renderCard(true);
+};
+renderCard(false);
+
+/* QUIZ MODE */
+let TOTAL_Q = 10;
+let quizList = [];
+let qIndex = 0;
+let score = 0;
+let locked = false;
+
+const optionsEl = document.getElementById('options');
+const feedbackEl = document.getElementById('feedback');
+const quizProgress = document.getElementById('quizProgress');
+const scorePill = document.getElementById('scorePill');
+const quizPlay = document.getElementById('quizPlay');
+const quizResult = document.getElementById('quizResult');
+
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+function startQuiz(){
+  const pool = currentList();
+  TOTAL_Q = Math.min(10, pool.length);
+  quizList = shuffle(pool).slice(0, TOTAL_Q);
+  qIndex = 0; score = 0; locked = false;
+  quizPlay.style.display = 'block';
+  quizResult.style.display = 'none';
+  updateScore();
+  renderQuestion();
+}
+
+function updateScore(){
+  scorePill.textContent = '得分 ' + score;
+  quizProgress.textContent = '第 ' + Math.min(qIndex+1, TOTAL_Q) + ' / ' + TOTAL_Q + ' 题';
+}
+
+function renderQuestion(){
+  locked = false;
+  feedbackEl.textContent = ''; feedbackEl.className = 'feedback';
+  const pool = currentList();
+  const correct = quizList[qIndex];
+  const wrongPool = pool.filter(a => a.en !== correct.en);
+  const wrongs = shuffle(wrongPool).slice(0, 3);
+  const choices = shuffle([correct, ...wrongs]);
+
+  optionsEl.innerHTML = '';
+  choices.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = c.emoji;
+    btn.onclick = () => handleAnswer(btn, c, correct);
+    optionsEl.appendChild(btn);
+  });
+  updateScore();
+  setTimeout(() => speak(correct.en), 250);
+}
+
+document.getElementById('replayBtn').onclick = () => speak(quizList[qIndex].en);
+
+function handleAnswer(btn, chosen, correct){
+  if(locked) return;
+  locked = true;
+  const isCorrect = chosen.en === correct.en;
+  btn.classList.add(isCorrect ? 'correct' : 'wrong');
+  if(isCorrect){
+    score++;
+    feedbackEl.textContent = '✅ 太棒了！ ' + correct.en + ' 是' + correct.cn;
+    feedbackEl.className = 'feedback ok';
+  } else {
+    feedbackEl.textContent = '❌ 再想想～正确答案是 ' + correct.en;
+    feedbackEl.className = 'feedback no';
+    [...optionsEl.children].forEach(o => { if(o.textContent === correct.emoji) o.classList.add('correct'); });
+  }
+  updateScore();
+  setTimeout(() => {
+    qIndex++;
+    if(qIndex < TOTAL_Q) renderQuestion(); else finishQuiz();
+  }, 1100);
+}
+
+function finishQuiz(){
+  quizPlay.style.display = 'none';
+  quizResult.style.display = 'block';
+  const title = document.getElementById('resultTitle');
+  const detail = document.getElementById('resultDetail');
+  if(score === TOTAL_Q) title.textContent = '满分！你是动物小博士！';
+  else if(score >= TOTAL_Q*0.6) title.textContent = '真厉害！';
+  else title.textContent = '继续加油！';
+  detail.textContent = '答对 ' + score + ' / ' + TOTAL_Q + ' 题';
+}
+
+document.getElementById('againBtn').onclick = startQuiz;
+</script>
+</body>
+</html>
